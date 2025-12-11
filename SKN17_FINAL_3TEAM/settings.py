@@ -66,9 +66,9 @@ WSGI_APPLICATION = 'SKN17_FINAL_3TEAM.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("DB_NAME", "baisdb"),
-        "USER": os.getenv("DB_USER", "final"),
-        "PASSWORD": os.getenv("DB_PASSWORD", "final"),
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": os.getenv("DB_HOST", "127.0.0.1"),
         "PORT": os.getenv("DB_PORT", "3306"),
         "OPTIONS": {"charset": "utf8mb4"},
