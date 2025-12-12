@@ -135,29 +135,25 @@ if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
 USE_S3_UPLOADS = True  # S3 사용 여부 (로컬만 쓸 땐 False)
 # USE_S3_UPLOADS = False  # S3 사용 여부 (로컬만 쓸 땐 False)
 
-# STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 AWS_REGION = os.getenv("AWS_REGION", "ap-northeast-2")
-AWS_S3_BUCKET = os.getenv("AWS_S3_BUCKET", "")
+AWS_S3_BUCKET_NAME = os.getenv("AWS_S3_BUCKET", "")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "")
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_S3_BUCKET}.s3.amazonaws.com'
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_S3_BUCKET_NAME}.s3.amazonaws.com'
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
 }
 
 AWS_LOCATION = 'static'
+AWS_S3_SIGNATURE_VERSION = 's3v4'
 
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        "OPTIONS": {"location": "media"},
-    },
-    "staticfiles": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        "OPTIONS": {"location": "static"},
-    },
-}
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # RunPod
@@ -187,3 +183,5 @@ LOGGING = {
         },
     },
 }
+
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None

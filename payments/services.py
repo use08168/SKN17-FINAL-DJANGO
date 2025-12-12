@@ -39,9 +39,9 @@ def prepare_kakao_payment(user_id, plan_code):
         "quantity": "1",
         "total_amount": str(total_amount),
         "tax_free_amount": "0",
-        "approval_url": "http://127.0.0.1:8000/payments/approve/",
-        "cancel_url": "http://127.0.0.1:8000/payments/cancel/",
-        "fail_url": "http://127.0.0.1:8000/payments/fail/",
+        "approval_url": "http://54.116.12.113:8080/payments/approve/",
+        "cancel_url": "http://54.116.12.113:8080/payments/cancel/",
+        "fail_url": "http://54.116.12.113:8080/payments/fail/",
     }
 
     res = requests.post(url, headers=headers, data=data)

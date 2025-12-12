@@ -1,6 +1,7 @@
 import json
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from . import services
 from .models import UserInfo
 
@@ -9,6 +10,7 @@ def index(request):
     return render(request, 'main.html')
 
 
+@csrf_exempt
 def send_verification_code(request):
     if request.method == 'POST':
         try:
