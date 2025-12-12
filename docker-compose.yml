@@ -8,8 +8,8 @@ services:
     command: bash -lc "python manage.py migrate && gunicorn SKN17_FINAL_3TEAM.wsgi:application -b 0.0.0.0:8000 --workers 3 --config gunicorn.conf.py"
     volumes:
       - .:/code
-      - static_volume: /code/staticfiles
-      - media_volume: /code/media
+      - static_volume:/code/staticfiles
+      - media_volume:/code/media
     expose:
       - "8000"
   nginx:
