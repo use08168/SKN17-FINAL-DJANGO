@@ -5,7 +5,7 @@ services:
     container_name: django_web
     env_file:
       - .env
-    command: bash -lc "python manage.py migrate && gunicorn SKN17_FINAL_3TEAM.wsgi:application -b 0.0.0.0:8000 --workers 3 --config gunicorn.conf.py"
+    command: bash -lc "python manage.py migrate && gunicorn SKN17_FINAL_3TEAM.wsgi:application -b 0.0.0.0:8000 --workers 3 --config gunicorn.conf.py --timeout 600"
     volumes:
       - .:/code
       - static_volume:/code/staticfiles

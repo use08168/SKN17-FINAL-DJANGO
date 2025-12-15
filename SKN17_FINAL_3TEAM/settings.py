@@ -133,7 +133,22 @@ if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
 
 # --- S3 Uploads (영상 저장소) ---
 USE_S3_UPLOADS = True
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "access_key": os.getenv("AWS_ACCESS_KEY_ID"),
+            "secret_key": os.getenv("AWS_SECRET_ACCESS_KEY"),
+            "bucket_name": os.getenv("AWS_S3_BUCKET"),
+            "region_name": os.getenv("AWS_REGION", "ap-northeast-2"),
+            "default_acl": "public-read",
+            "querystring_auth": False,
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [
@@ -151,7 +166,7 @@ AWS_DEFAULT_ACL = 'public-read'
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
 }
-AWS_QUERYSTRING_AUTH = False
+AWS_QUERYSTRING_AUTH = True
 AWS_S3_SIGNATURE_VERSION = 's3v4'
 
 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'

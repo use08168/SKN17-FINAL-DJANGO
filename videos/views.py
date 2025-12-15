@@ -142,12 +142,23 @@ def play_user_video(request, video_id):
         return redirect('/')
     
 def check_completed_videos(request):
-    if not request.user.is_authenticated:
+    try:
+        if not request.user.is_authenticated:
+            return JsonResponse({'videos': []})
+
+        completed_videos_qs = UserUploadVideo.objects.filter(
+            user=request.user, 
+            upload_status_code__common_code=22
+        ).values('upload_file', 'upload_title')
+
+        video_list = []
+        for video in completed_videos_qs:
+            video_list.append({
+                'upload_file_id': video['upload_file'],
+                'upload_title': video['upload_title']
+            })
+
+        return JsonResponse({'videos': video_list})
+
+    except Exception as e:
         return JsonResponse({'videos': []})
-
-    completed_videos = UserUploadVideo.objects.filter(
-        user=request.user, 
-        upload_status_code__common_code=22
-    ).values('upload_file_id', 'upload_title')
-
-    return JsonResponse({'videos': list(completed_videos)})

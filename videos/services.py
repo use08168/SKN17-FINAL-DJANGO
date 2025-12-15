@@ -303,6 +303,7 @@ def process_upload_video(request):
                     target=runpod_client.process_and_monitor,
                     args=(user_upload, None, int(analyst_id))
                 )
+                task_thread.daemon = True
                 task_thread.start()
                 
                 return JsonResponse({
