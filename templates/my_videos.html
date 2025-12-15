@@ -18,44 +18,68 @@
             
             <div class="my-video-grid">
                 {% for video in video_list %}
-                <div class="my-video-card" id="card-{{ video.id }}" onclick="location.href='{% url 'videos:play_user_video' video.id %}'">
-                    <div class="mv-thumb-box">
-                        {% if video.is_processing %}
-                            <div class="processing-overlay">
-                                <video src="{{ video.url }}" muted></video> <div class="proc-msg">영상 생성 중..</div>
-                                <div class="proc-bar-bg"><div class="proc-bar-fill"></div></div>
-                            </div>
+                    {% with status=video.upload_status_code.common_code %}
+                    
+                    <div class="my-video-card" id="card-{{ video.id }}"
+                        {% if status == '22' %}
+                            onclick="location.href='{% url 'videos:play_user_video' video.id %}'"
+                            style="cursor: pointer;"
                         {% else %}
-                            <video src="{{ video.url }}" muted onmouseover="this.play()" onmouseout="this.pause();this.currentTime=0;"></video>
-                            <div class="hover-actions">
-                                <button class="action-btn download" 
-                                        data-count="{{ video.download_count }}"
-                                        onclick="event.stopPropagation(); openDownloadModal(this, '{{ video.id }}', '{{ video.title }}')" 
-                                        title="영상 다운로드">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="7 10 12 15 17 10"></polyline>
-                                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                                    </svg>
-                                </button>
-                                <button class="action-btn delete" onclick="event.stopPropagation(); openDeleteModal('{{ video.id }}')" title="영상 삭제">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        {% endif %}
-                    </div>
+                            style="cursor: default;" 
+                        {% endif %}>
 
-                    <div class="mv-info-box">
-                        <div class="mv-title">{{ video.title }}</div>
-                        <div class="mv-meta">업로드 날짜 : {{ video.date|date:"Y년 m월 d일" }}</div>
-                        <div class="mv-meta">해설위원 : {{ video.commentator }}</div>
+                        <div class="mv-thumb-box">
+                            
+                            {% if status == '20' or status == '21' %}
+                                <div class="processing-overlay">
+                                    <video src="{{ video.url }}" muted></video> 
+                                    <div class="proc-msg">
+                                        {% if status == '20' %}대기 중..{% else %}영상 분석 중..{% endif %}
+                                    </div>
+                                    <div class="proc-bar-bg"><div class="proc-bar-fill"></div></div>
+                                </div>
+
+                            {% elif status == '23' %}
+                                <div class="processing-overlay error-overlay">
+                                    <div class="proc-msg error-msg" style="color: #ff6b6b; font-weight: bold;">
+                                        ⚠️ 분석 실패
+                                    </div>
+                                    <div class="hover-actions" style="opacity: 1; justify-content: center;">
+                                        <button class="action-btn delete" onclick="event.stopPropagation(); openDeleteModal('{{ video.id }}')" title="영상 삭제">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                            {% elif status == '22' %}
+                                <video src="{{ video.url }}" muted onmouseover="this.play()" onmouseout="this.pause();this.currentTime=0;"></video>
+                                <div class="hover-actions">
+                                    <button class="action-btn download" 
+                                            data-count="{{ video.download_count }}"
+                                            onclick="event.stopPropagation(); openDownloadModal(this, '{{ video.id }}', '{{ video.title }}')" 
+                                            title="영상 다운로드">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="7 10 12 15 17 10"></polyline>
+                                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                                        </svg>
+                                    </button>
+                                    <button class="action-btn delete" onclick="event.stopPropagation(); openDeleteModal('{{ video.id }}')" title="영상 삭제">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
+                    {% endwith %}
                 {% endfor %}
-
+                
                 <div class="my-video-card add-new-card" onclick="openUploadModal()">
                     <div class="add-icon-circle">+</div>
                     <p>새 영상 업로드</p>

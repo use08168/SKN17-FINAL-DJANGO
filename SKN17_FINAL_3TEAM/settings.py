@@ -135,6 +135,8 @@ if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
 USE_S3_UPLOADS = True  # S3 사용 여부 (로컬만 쓸 땐 False)
 # USE_S3_UPLOADS = False  # S3 사용 여부 (로컬만 쓸 땐 False)
 
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 AWS_REGION = os.getenv("AWS_REGION", "ap-northeast-2")
@@ -145,6 +147,8 @@ AWS_S3_CUSTOM_DOMAIN = f'{AWS_S3_BUCKET_NAME}.s3.amazonaws.com'
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
 }
+AWS_DEFAULT_ACL = 'public-read'
+AWS_QUERYSTRING_AUTH = False
 
 AWS_LOCATION = 'static'
 AWS_S3_SIGNATURE_VERSION = 's3v4'
@@ -157,8 +161,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # RunPod
-RUNPOD_API_BASE = os.getenv("RUNPOD_API_BASE", "").rstrip("/")
-RUNPOD_TIMEOUT = int(os.getenv("RUNPOD_TIMEOUT", "120"))
+RUNPOD_API_URL = os.getenv('RUNPOD_API_URL')
 
 
 # Kakaopay

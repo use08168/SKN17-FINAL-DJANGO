@@ -140,3 +140,14 @@ def play_user_video(request, video_id):
     except UserInfo.DoesNotExist:
         request.session.flush()
         return redirect('/')
+    
+def check_completed_videos(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'videos': []})
+
+    completed_videos = UserUploadVideo.objects.filter(
+        user=request.user, 
+        upload_status_code__common_code=22
+    ).values('upload_file_id', 'upload_title')
+
+    return JsonResponse({'videos': list(completed_videos)})

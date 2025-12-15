@@ -1,10 +1,13 @@
 import math
 import json
+import threading
 from django.utils import timezone
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from django.core.serializers.json import DjangoJSONEncoder
+from django.http import JsonResponse
+from .runpod import runpod_client
 from payments.models import SubscribeHistory
 from .models import UserInfo, HighlightVideo, UserUploadVideo, FileInfo, CommonCode, SubtitleInfo
 
@@ -275,44 +278,45 @@ def get_my_videos_context(user_id):
     }
 
 
-def process_upload_video(user_id, uploaded_file, title, commentator_name):
-    """영상 업로드 처리 로직"""
-    user = UserInfo.objects.get(user_id=user_id)
+def process_upload_video(request):
+    if request.method == 'POST':
+        video_file = request.FILES.get('video')
+        title = request.POST.get('title', 'Untitled')
+        analyst_id = request.POST.get('analyst', 19)
+        
+        if video_file:
+            if not video_file.name.lower().endswith('.mp4'):
+                return JsonResponse({'success': False, 'message': 'MP4 형식의 파일만 업로드 가능합니다.'})
+            
+            try:
+                file_info = FileInfo.objects.create(file_path=video_file)
+                status_uploaded = CommonCode.objects.get(common_code=20, common_code_grp='STATUS')
+                user_upload = UserUploadVideo.objects.create(
+                    upload_file=file_info,
+                    user=request.user,
+                    upload_status_code=status_uploaded,
+                    upload_title=title,
+                    upload_date=timezone.now()
+                )
+                
+                task_thread = threading.Thread(
+                    target=runpod_client.process_and_monitor,
+                    args=(user_upload, None, int(analyst_id))
+                )
+                task_thread.start()
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': '업로드가 완료되었습니다. 분석이 시작됩니다.',
+                    'file_id': file_info.file_id
+                })
+                
+            except CommonCode.DoesNotExist:
+                 return JsonResponse({'success': False, 'message': '공통코드(상태값) 설정 오류입니다.'})
+            except Exception as e:
+                return JsonResponse({'success': False, 'message': f'오류 발생: {str(e)}'})
 
-    if not uploaded_file.name.lower().endswith('.mp4'):
-        raise ValueError('MP4 형식의 파일만 업로드 가능합니다.')
-
-    new_file_info = FileInfo.objects.create(file_path=uploaded_file)
-    
-    try:
-        status_code_20 = CommonCode.objects.get(common_code=20)
-    except CommonCode.DoesNotExist:
-        status_code_20 = None
-
-    commentator_code_obj = CommonCode.objects.filter(common_code_value=commentator_name).first()
-    
-    new_upload = UserUploadVideo.objects.create(
-        upload_file=new_file_info,
-        user=user,
-        upload_status_code=status_code_20,
-        upload_title=title,
-        upload_date=timezone.now(),
-        download_count=0,
-        use_yn=True
-    )
-    
-    SubtitleInfo.objects.create(
-        upload_file=new_upload,
-        video_file=None,
-        commentator_code=commentator_code_obj,
-        subtitle=b''
-    )
-
-    file_size_kb = math.ceil(uploaded_file.size / 1024)
-    user.storage_usage += file_size_kb
-    user.save()
-
-    # TODO: RunPod 호출 로직 추가 가능
+    return JsonResponse({'success': False, 'message': '잘못된 요청입니다.'})
 
 
 def process_download_logic(user_id, video_id):

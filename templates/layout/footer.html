@@ -1,4 +1,5 @@
 {% load static %}
+<script src="{% static 'js/common.js' %}"></script>
 <footer class="main-footer">
     <div class="footer-content">
         <div class="footer-section brand">
@@ -13,3 +14,13 @@
         </div>
     </div>
 </footer>
+
+<div id="global-toast" class="toast-container">
+    <div class="toast-header">
+        <strong class="me-auto">🔔 알림</strong>
+        <button type="button" class="toast-close" onclick="closeToast()">×</button>
+    </div>
+    <div class="toast-body" id="toast-message">
+        영상이 처리되었습니다!
+    </div>
+</div>

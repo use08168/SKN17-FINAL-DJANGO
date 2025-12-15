@@ -80,6 +80,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 300);
         }
     }
+
+    setInterval(checkNotifications, 5000);
 });
 
 function changeTeam(btnElement, teamCode) {
@@ -142,3 +144,45 @@ document.addEventListener('click', function(e) {
         wrapper.classList.remove('active');
     }
 });
+
+async function checkNotifications() {
+    try {
+        const response = await fetch('/videos/api/check-notifications/');
+        const data = await response.json();
+        
+        if (!data.videos || data.videos.length === 0) return;
+
+        let notifiedList = JSON.parse(localStorage.getItem('notified_videos')) || [];
+        data.videos.forEach(video => {
+            const videoId = video.upload_file_id;
+
+            if (!notifiedList.includes(videoId)) {
+                showToast(`'${video.upload_title}' 분석이 완료되었습니다!`, videoId);
+                notifiedList.push(videoId);
+            }
+        });
+
+        localStorage.setItem('notified_videos', JSON.stringify(notifiedList));
+
+    } catch (error) {
+        console.error("알림 확인 중 오류:", error);
+    }
+}
+
+function showToast(message, videoId) {
+    const toast = document.getElementById('global-toast');
+    const msgBox = document.getElementById('toast-message');
+
+    msgBox.innerHTML = `${message} <br><a href="/videos/play/${videoId}/" class="toast-link">보러가기 ></a>`;
+
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        closeToast();
+    }, 5000);
+}
+
+function closeToast() {
+    const toast = document.getElementById('global-toast');
+    toast.classList.remove('show');
+}

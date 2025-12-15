@@ -1485,6 +1485,17 @@ video::-webkit-media-controls-fullscreen-button {
     display: flex; flex-direction: column; justify-content: flex-end; 
 }
 .processing-overlay video { opacity: 0.3; filter: blur(3px); }
+.processing-overlay.error-overlay {
+    background: rgba(50, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.proc-msg.error-msg {
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
 .proc-msg { 
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
     font-size: 0.9rem; color: #ccc; font-weight: 700; 
@@ -2005,4 +2016,57 @@ video::-webkit-media-controls-fullscreen-button {
 .footer-copyright {
     font-size: 0.8rem;
     opacity: 0.5;
+}
+
+/* 카톡 스타일 알림창 CSS */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    background-color: #333;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 9999;
+    display: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s, transform 0.3s;
+    overflow: hidden;
+}
+
+.toast-container.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast-header {
+    background-color: #444;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #555;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.toast-body {
+    padding: 15px;
+    font-size: 0.95rem;
+}
+
+.toast-link {
+    color: #E50914;
+    text-decoration: none;
+    font-weight: bold;
+    margin-left: 5px;
 }

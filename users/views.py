@@ -1,11 +1,12 @@
 import json
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from . import services
 from .models import UserInfo
 
 
+@ensure_csrf_cookie
 def index(request):
     return render(request, 'main.html')
 

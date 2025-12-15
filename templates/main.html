@@ -457,6 +457,7 @@ function isValidEmailFormat(email) {
 async function requestVerification() {
     const emailInput = document.getElementById('emailInput');
     const emailError = document.getElementById('emailErrorMsg');
+    const sendBtn = document.getElementById('sendBtn');
     const email = emailInput.value;
 
     emailError.style.display = 'none';
@@ -472,6 +473,10 @@ async function requestVerification() {
         return;
     }
 
+    sendBtn.disabled = true;
+    sendBtn.innerText = "발송 중...";
+    document.body.style.cursor = 'wait';
+
     try {
         const response = await fetch('/email/send-code/', {
             method: 'POST',
@@ -479,19 +484,26 @@ async function requestVerification() {
             body: JSON.stringify({ email: email })
         });
         const data = await response.json();
+
+        document.body.style.cursor = 'default';
         if (!data.success) throw new Error(data.message); 
         alert("인증코드가 발송되었습니다.");
         emailInput.setAttribute('readonly', true);
         
         document.getElementById('verificationSection').style.display = 'block';
-        document.getElementById('sendBtn').style.display = 'none';
         document.getElementById('confirmBtn').style.display = 'block';
+        sendBtn.innerText = '인증코드 발송';
+        sendBtn.style.display = 'none';
         
         startAuthTimer(300);  
         
         localStorage.setItem('signupCooldownEnd', Date.now() + 60000);
         lockSignupResendBtn(60);
     } catch (error) {
+        sendBtn.disabled = false;
+        sendBtn.innerText = "인증코드 발송";
+        document.body.style.cursor = 'default';
+
         showError('emailErrorMsg', 'emailInput', error.message || "오류가 발생했습니다.", 'sendBtn');
     }
 }
