@@ -280,15 +280,21 @@ def get_my_videos_context(user_id):
 
 def process_upload_video(request):
     if request.method == 'POST':
-        video_file = request.FILES.get('video')
-        title = request.POST.get('title', 'Untitled')
-        analyst_id = request.POST.get('analyst', 19)
+        video_file = request.FILES.get('video_file')
+        title = request.POST.get('video_title', 'Untitled')
+        commentator_name = request.POST.get('commentator')
         
         if video_file:
             if not video_file.name.lower().endswith('.mp4'):
                 return JsonResponse({'success': False, 'message': 'MP4 형식의 파일만 업로드 가능합니다.'})
             
             try:
+                analyst_map = {
+                    '박찬오': 17,
+                    '이순칠': 18,
+                    '김선오': 19
+                }
+                analyst_id = analyst_map.get(commentator_name, 17)
                 file_info = FileInfo.objects.create(file_path=video_file)
                 status_uploaded = CommonCode.objects.get(common_code=20, common_code_grp='STATUS')
                 user_upload = UserUploadVideo.objects.create(
