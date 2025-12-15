@@ -79,11 +79,21 @@ def upload_video(request):
             title = request.POST.get('video_title')
             commentator = request.POST.get('commentator')
             
-            if uploaded_file:
-                services.process_upload_video(
-                    request.session.get('user_id'), uploaded_file, title, commentator
-                )
-                return JsonResponse({'status': 'success', 'message': '업로드 및 처리가 완료되었습니다.'})
+            if not uploaded_file:
+                return JsonResponse({'status': 'error', 'message': '파일이 없습니다.'}, status=400)
+
+            result = services.process_upload_video(
+                user=request.user, 
+                video_file=uploaded_file, 
+                title=title, 
+                commentator_name=commentator
+            )
+
+            return JsonResponse({
+                'status': 'success', 
+                'message': '업로드 및 처리가 완료되었습니다.',
+                'file_id': result['file_id']
+            })
             
         except ValueError as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
