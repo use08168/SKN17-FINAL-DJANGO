@@ -68,7 +68,7 @@ class RunPodClient:
         if code_obj:
             user_upload_instance.upload_status_code = code_obj
             user_upload_instance.save()
-            logger.info(f"💾 DB 상태 업데이트: {code_val} (ID: {user_upload_instance.id})")
+            logger.info(f"💾 DB 상태 업데이트: {code_val} (ID: {user_upload_instance.pk})")
 
     def upload_video_to_s3(self, django_file_field):
         try:

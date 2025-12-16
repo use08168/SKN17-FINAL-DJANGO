@@ -1436,44 +1436,115 @@ video::-webkit-media-controls-fullscreen-button {
 
 .my-video-grid-wrapper { width: 100%; max-width: 1400px; padding: 0 40px 60px 40px; box-sizing: border-box; text-align: left; }
 .my-page-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 30px; border-left: 5px solid #E50914; padding-left: 15px; }
-
-.my-video-grid { 
-    display: grid; 
-    grid-template-columns: repeat(4, 1fr); 
-    gap: 25px; 
+.my-video-grid {
+    display: grid;
+    grid-template_columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
 }
-
-.my-video-card { 
-    background-color: #1a1a1a; 
-    border-radius: 8px; 
-    overflow: hidden; 
-    transition: transform 0.2s, box-shadow 0.2s;
-    cursor: pointer; 
-    display: flex; 
-    flex-direction: column;
-}
-.my-video-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-
-.mv-thumb-box {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    background-color: #000;
-    overflow: hidden;
+.my-video-card {
+    background-color: #1a1a1a;
     border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s;
+    position: relative;
 }
-.mv-thumb-box video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.my-video-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+.mv-thumb-box {
+    position: relative; 
+    width: 100%;
+    aspect-ratio: 16 / 9; 
+    background-color: #000;
+}
+.base-thumb-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    opacity: 0.6;
+}
 .status-overlay {
     position: absolute;
-    inset: 0; /* top, right, bottom, left: 0 과 동일 */
-    background-color: rgba(0, 0, 0, 0.6); /* 반투명 검정 배경 */
+    inset: 0; 
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 10;
-    backdrop-filter: blur(2px); /* 뒤에 있는 영상 살짝 흐리게 */
+    background-color: rgba(0, 0, 0, 0.4); 
+    backdrop-filter: blur(2px); 
+    z-index: 2;
 }
+.processing-overlay {
+    background-color: rgba(0, 0, 0, 0.6);
+}
+.spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #E50914; 
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+.failed-overlay {
+    background-color: rgba(50, 0, 0, 0.7);
+}
+.error-text {
+    color: #ff6b6b;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+.hover-overlay {
+    background-color: rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.my-video-card:hover .hover-overlay {
+    opacity: 1;
+}
+.overlay-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+}
+.play-btn { background-color: #E50914; }
+.delete-btn { background-color: #444; border: 1px solid #666; }
+.delete-btn:hover { background-color: #d32f2f; border-color: #d32f2f; }
+.mv-info {
+    padding: 12px;
+    color: #fff;
+}
+.mv-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.mv-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #aaa;
+}
+.badge {
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    color: #fff;
+}
+.badge-processing { background-color: #f57c00; }
+.badge-failed { background-color: #d32f2f; }
+.badge-complete { background-color: #388e3c; }
 .hover-actions {
     position: absolute;
     inset: 0;
@@ -1482,7 +1553,7 @@ video::-webkit-media-controls-fullscreen-button {
     align-items: center;
     justify-content: center;
     gap: 15px;
-    opacity: 0; /* 평소엔 안 보임 */
+    opacity: 0; 
     transition: opacity 0.3s ease;
 }
 .my-video-card:hover .hover-actions {
@@ -1517,18 +1588,6 @@ video::-webkit-media-controls-fullscreen-button {
 .mv-badge.processing { background-color: #e5a50a; color: #000; }
 .mv-badge.failed { background-color: #ff4444; color: #fff; }
 .mv-badge.complete { background-color: #4CAF50; color: #fff; }
-.spinner {
-    width: 30px;
-    height: 30px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-radius: 50%;
-    border-top-color: #e50914;
-    animation: spin 1s ease-in-out infinite;
-    margin-bottom: 10px;
-}
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
 .base-thumb-video {
     width: 100%;
     height: 100%;
