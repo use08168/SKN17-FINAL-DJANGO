@@ -6,6 +6,8 @@ import logging
 import os
 import tempfile
 import datetime
+import sys
+from botocore.config import Config
 from pathlib import Path
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -14,14 +16,29 @@ from users.models import CommonCode
 from .models import SubtitleInfo
 
 logger = logging.getLogger(__name__)
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('[%(asctime)s] %(levelname)s [%(name)s] %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 class RunPodClient:
     def __init__(self):
+        s3_config = Config(
+            connect_timeout=120,    
+            read_timeout=120,       
+            retries={
+                'max_attempts': 10,
+                'mode': 'adaptive' 
+            }
+        )
         self.s3_client = boto3.client(
             's3',
             region_name=settings.AWS_S3_REGION_NAME,
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            config=s3_config
         )
         self.bucket_name = settings.AWS_STORAGE_BUCKET_NAME
         self.runpod_url = settings.RUNPOD_API_URL
@@ -34,7 +51,7 @@ class RunPodClient:
 
     def _create_resilient_session(self):
         session = requests.Session()
-        retry = Retry(total=5, backoff_factor=2, status_forcelist=[429, 500, 502, 503, 504])
+        retry = Retry(total=10, backoff_factor=2, status_forcelist=[429, 500, 502, 503, 504])
         adapter = HTTPAdapter(max_retries=retry)
         session.mount("http://", adapter)
         session.mount("https://", adapter)
@@ -45,6 +62,13 @@ class RunPodClient:
             return CommonCode.objects.get(common_code=code_val, common_code_grp=group_name)
         except CommonCode.DoesNotExist:
             return None
+        
+    def _update_status(self, user_upload_instance, code_val):
+        code_obj = self._get_common_code(code_val, 'STATUS')
+        if code_obj:
+            user_upload_instance.upload_status_code = code_obj
+            user_upload_instance.save()
+            logger.info(f"💾 DB 상태 업데이트: {code_val} (ID: {user_upload_instance.id})")
 
     def upload_video_to_s3(self, django_file_field):
         try:
@@ -127,11 +151,7 @@ class RunPodClient:
         3. 완료 시 상태 '처리완료(22)' 변경 및 자막 저장
         """
         try:
-            processing_code = self._get_common_code(21, 'STATUS')
-            if processing_code:
-                user_upload_instance.upload_status_code = processing_code
-                user_upload_instance.save()
-
+            self._update_status(user_upload_instance, 21)
             runpod_analyst_id = self.ANALYST_MAPPING.get(db_analyst_id, 1)
 
             s3_input_key = self.upload_video_to_s3(user_upload_instance.upload_file.file_path)
@@ -141,10 +161,7 @@ class RunPodClient:
 
         except Exception as e:
             logger.error(f"❌ 프로세스 실패: {e}")
-            failed_code = self._get_common_code(23, 'STATUS')
-            if failed_code:
-                user_upload_instance.upload_status_code = failed_code
-                user_upload_instance.save()
+            self._update_status(user_upload_instance, 23)
 
     def _monitor_loop(self, user_upload_instance, job_id, db_analyst_id, output_s3_key):
         poll_interval = 5
@@ -160,45 +177,44 @@ class RunPodClient:
                      logger.info(f"Job Status: {status} | Progress: {progress}% | Step: {step}")
 
                 if status == 'COMPLETED':
-                    logger.info("✅ 작업 완료! 결과 다운로드 및 DB 저장 시작")
-
-                    original_name = user_upload_instance.upload_file.file_path.name
-                    saved_rel_path, local_abs_path = self.download_result_from_s3(output_s3_key, original_name)
-
-                    user_upload_instance.upload_file.file_path = saved_rel_path
-                    user_upload_instance.save()
+                    logger.info("✅ 작업 완료! 결과 다운로드 시작...")
                     
-                    script_data = status_data.get('output', {}).get('script')
-                    if script_data:
-                        commentator_code_obj = self._get_common_code(db_analyst_id, 'COMMENTATOR')
-                        script_bytes = json.dumps(script_data, ensure_ascii=False).encode('utf-8')
-                        
-                        SubtitleInfo.objects.create(
-                            upload_file=user_upload_instance,
-                            video_file=None, 
-                            subtitle=script_bytes,
-                            commentator_code=commentator_code_obj 
-                        )
+                    try:
+                        original_name = user_upload_instance.upload_file.file_path.name
+                        saved_rel_path, local_abs_path = self.download_result_from_s3(output_s3_key, original_name)
 
-                    completed_code = self._get_common_code(22, 'STATUS')
-                    if completed_code:
-                        user_upload_instance.upload_status_code = completed_code
+                        user_upload_instance.upload_file.file_path = saved_rel_path
                         user_upload_instance.save()
+                        
+                        script_data = status_data.get('output', {}).get('script')
+                        if script_data:
+                            commentator_code_obj = self._get_common_code(db_analyst_id, 'COMMENTATOR')
+                            script_bytes = json.dumps(script_data, ensure_ascii=False).encode('utf-8')
+                            
+                            SubtitleInfo.objects.create(
+                                upload_file=user_upload_instance,
+                                video_file=None, 
+                                subtitle=script_bytes,
+                                commentator_code=commentator_code_obj 
+                            )
+
+                        self._update_status(user_upload_instance, 22)
+                        
+                    except Exception as download_error:
+                        logger.error(f"❌ 결과 다운로드/저장 중 치명적 오류: {download_error}")
+                        self._update_status(user_upload_instance, 23)
                     
-                    break
+                    break 
                 
                 elif status == 'FAILED':
                     logger.error(f"❌ 작업 실패: {status_data.get('error')}")
-                    failed_code = self._get_common_code(23, 'STATUS')
-                    if failed_code:
-                        user_upload_instance.upload_status_code = failed_code
-                        user_upload_instance.save()
+                    self._update_status(user_upload_instance, 23)
                     break
                 
                 time.sleep(poll_interval)
             
             except Exception as e:
-                logger.error(f"⚠️ 모니터링 중 에러: {e}")
+                logger.error(f"⚠️ 모니터링 중 에러 발생: {e}")
                 time.sleep(poll_interval)
 
 runpod_client = RunPodClient()

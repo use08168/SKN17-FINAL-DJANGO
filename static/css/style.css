@@ -1434,22 +1434,6 @@ video::-webkit-media-controls-fullscreen-button {
 
 @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-.spinner {
-    display: inline-block;
-    width: 18px;
-    height: 18px;
-    margin-right: 10px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: #fff; 
-    animation: spin 1s ease-in-out infinite;
-    vertical-align: middle;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
 .my-video-grid-wrapper { width: 100%; max-width: 1400px; padding: 0 40px 60px 40px; box-sizing: border-box; text-align: left; }
 .my-page-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 30px; border-left: 5px solid #E50914; padding-left: 15px; }
 
@@ -1470,15 +1454,88 @@ video::-webkit-media-controls-fullscreen-button {
 }
 .my-video-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
 
-.mv-thumb-box { 
-    width: 100%; 
-    aspect-ratio: 16 / 9; 
-    background-color: #000; 
-    position: relative; 
-    overflow: hidden; 
+.mv-thumb-box {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: #000;
+    overflow: hidden;
+    border-radius: 8px;
 }
 .mv-thumb-box video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.status-overlay {
+    position: absolute;
+    inset: 0; /* top, right, bottom, left: 0 과 동일 */
+    background-color: rgba(0, 0, 0, 0.6); /* 반투명 검정 배경 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    backdrop-filter: blur(2px); /* 뒤에 있는 영상 살짝 흐리게 */
+}
+.hover-actions {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    opacity: 0; /* 평소엔 안 보임 */
+    transition: opacity 0.3s ease;
+}
+.my-video-card:hover .hover-actions {
+    opacity: 1;
+}
+.mv-info {
+    padding: 12px 4px;
+}
+.mv-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.mv-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #aaa;
+}
 
+.mv-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+.mv-badge.processing { background-color: #e5a50a; color: #000; }
+.mv-badge.failed { background-color: #ff4444; color: #fff; }
+.mv-badge.complete { background-color: #4CAF50; color: #fff; }
+.spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #e50914;
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 10px;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+.base-thumb-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0.6; 
+}
 .processing-overlay { 
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
     background: rgba(0,0,0,0.6); 

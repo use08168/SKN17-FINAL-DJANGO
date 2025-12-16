@@ -15,7 +15,6 @@
     {% if video_list %}
         <div class="my-video-grid-wrapper">
             <h2 class="section-title">내 영상 보관함</h2>
-            
             <div class="my-video-grid">
                 {% for video in video_list %}
                     {% with status=video.upload_status_code.common_code %}
@@ -29,37 +28,32 @@
                         {% endif %}>
 
                         <div class="mv-thumb-box">
-                            
+                            <video src="{{ video.upload_file.file_path.url }}" class="base-thumb-video" muted></video>
+
                             {% if status == '20' or status == '21' %}
-                                <div class="processing-overlay">
-                                    <video src="{{ video.url }}" muted></video> 
+                                <div class="status-overlay processing">
+                                    <div class="spinner"></div>
                                     <div class="proc-msg">
-                                        {% if status == '20' %}대기 중..{% else %}영상 분석 중..{% endif %}
+                                        {% if status == '20' %}대기 중..{% else %}분석 중..{% endif %}
                                     </div>
                                     <div class="proc-bar-bg"><div class="proc-bar-fill"></div></div>
                                 </div>
 
                             {% elif status == '23' %}
-                                <div class="processing-overlay error-overlay">
-                                    <div class="proc-msg error-msg" style="color: #ff6b6b; font-weight: bold;">
-                                        ⚠️ 분석 실패
-                                    </div>
-                                    <div class="hover-actions" style="opacity: 1; justify-content: center;">
-                                        <button class="action-btn delete" onclick="event.stopPropagation(); openDeleteModal('{{ video.id }}')" title="영상 삭제">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <polyline points="3 6 5 6 21 6"></polyline>
-                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
+                                <div class="status-overlay error">
+                                    <div class="proc-msg error-msg">⚠️ 분석 실패</div>
+                                    <button class="action-btn delete" onclick="event.stopPropagation(); openDeleteModal('{{ video.id }}')" title="영상 삭제">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                    </button>
                                 </div>
 
                             {% elif status == '22' %}
-                                <video src="{{ video.url }}" muted onmouseover="this.play()" onmouseout="this.pause();this.currentTime=0;"></video>
                                 <div class="hover-actions">
                                     <button class="action-btn download" 
-                                            data-count="{{ video.download_count }}"
-                                            onclick="event.stopPropagation(); openDownloadModal(this, '{{ video.id }}', '{{ video.title }}')" 
+                                            onclick="event.stopPropagation(); openDownloadModal(this, '{{ video.id }}', '{{ video.upload_title }}')" 
                                             title="영상 다운로드">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -76,6 +70,21 @@
                                 </div>
                             {% endif %}
                         </div>
+
+                        <div class="mv-info">
+                            <div class="mv-title">{{ video.upload_title }}</div>
+                            <div class="mv-meta">
+                                <span class="mv-date">{{ video.upload_date|date:"Y.m.d" }}</span>
+                                {% if status == '22' %}
+                                    <span class="mv-badge complete">분석 완료</span>
+                                {% elif status == '23' %}
+                                    <span class="mv-badge failed">실패</span>
+                                {% else %}
+                                    <span class="mv-badge processing">진행 중</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
                     </div>
                     {% endwith %}
                 {% endfor %}
