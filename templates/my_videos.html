@@ -14,90 +14,86 @@
 <div class="my-video-container">
     {% if video_list %}
         <div class="my-video-grid-wrapper">
-            <h2 class="section-title">내 영상 보관함</h2>
-                <div class="my-video-grid">
-                    {% for video in video_list %}
-                        {% with status=video.upload_status_code.common_code %}
-                        
-                        <div class="my-video-card" id="card-{{ video.id }}"
-                            {% if status == '22' %}
-                                onclick="location.href='{% url 'videos:play_user_video' video.id %}'"
-                                style="cursor: pointer;"
-                            {% else %}
-                                style="cursor: default;"
-                            {% endif %}>
+        <h2 class="my-page-title">내 영상 보관함</h2>
 
-                            <div class="mv-thumb-box">
-                                {% if status == '20' or status == '21' %}
-                                    <div class="processing-overlay">
-                                        <video src="{{ video.upload_file.file_path.url }}" muted></video>
-                                        
-                                        <div class="proc-content">
-                                            <div class="proc-msg">
-                                                {% if status == '20' %}대기 중..{% else %}영상 생성 중..{% endif %}
-                                            </div>
-                                            <div class="proc-bar-bg"><div class="proc-bar-fill"></div></div>
-                                        </div>
-                                    </div>
+        <div class="my-video-grid">
+            {% for video in video_list %}
+                {% with status=video.upload_status_code.common_code %}
+                
+                <div class="my-video-card" id="card-{{ video.id }}"
+                    {% if status == '22' %}
+                        onclick="location.href='{% url 'videos:play_user_video' video.id %}'"
+                        style="cursor: pointer;"
+                    {% else %}
+                        style="cursor: default;"
+                    {% endif %}>
 
-                                {% elif status == '23' %}
-                                    <div class="processing-overlay error-mode">
-                                        <div class="error-bg"></div>
-                                        <div class="proc-msg error-text">⚠️ 분석 실패</div>
-                                        <button class="action-btn delete" onclick="event.stopPropagation(); openDeleteModal('{{ video.id }}')" title="삭제">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <polyline points="3 6 5 6 21 6"></polyline>
-                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
+                    <div class="mv-thumb-box">
+                        <video src="{{ video.upload_file.file_path.url }}" class="base-thumb-video" muted preload="metadata"></video>
 
-                                {% elif status == '22' %}
-                                    <video src="{{ video.upload_file.file_path.url }}" muted 
-                                        onmouseover="this.play()" 
-                                        onmouseout="this.pause();this.currentTime=0;"
-                                        class="completed-video"></video>
-                                    
-                                    <div class="hover-actions">
-                                        <button class="action-btn download" 
-                                                data-count="{{ video.download_count }}"
-                                                onclick="event.stopPropagation(); openDownloadModal(this, '{{ video.id }}', '{{ video.upload_title }}')" 
-                                                title="영상 다운로드">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                                <polyline points="7 10 12 15 17 10"></polyline>
-                                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                                            </svg>
-                                        </button>
-                                        <button class="action-btn delete" onclick="event.stopPropagation(); openDeleteModal('{{ video.id }}')" title="영상 삭제">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <polyline points="3 6 5 6 21 6"></polyline>
-                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                {% endif %}
+                        {% if status == '20' or status == '21' %}
+                            <div class="status-overlay processing-overlay">
+                                <div class="spinner"></div>
+                                <span class="proc-msg">
+                                    {% if status == '20' %}대기 중..{% else %}분석 중..{% endif %}
+                                </span>
+                                <div class="proc-bar-bg"><div class="proc-bar-fill"></div></div>
                             </div>
 
-                            <div class="mv-info">
-                                <div class="mv-title">{{ video.upload_title }}</div>
-                                <div class="mv-meta">
-                                    <span class="mv-date">{{ video.upload_date|date:"Y.m.d" }}</span>
-                                    {% if status == '22' %}<span class="mv-badge complete">완료</span>
-                                    {% elif status == '23' %}<span class="mv-badge failed">실패</span>
-                                    {% else %}<span class="mv-badge processing">진행 중</span>{% endif %}
-                                </div>
+                        {% elif status == '23' %}
+                            <div class="status-overlay failed-overlay">
+                                <span class="error-text">⚠️ 분석 실패</span>
+                                <button class="action-btn delete" onclick="event.stopPropagation(); openDeleteModal('{{ video.id }}')" title="삭제">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                </button>
                             </div>
+
+                        {% elif status == '22' %}
+                            <div class="status-overlay hover-overlay">
+                                <button class="action-btn download" 
+                                        onclick="event.stopPropagation(); openDownloadModal(this, '{{ video.id }}', '{{ video.upload_title }}')" 
+                                        title="다운로드">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                                    </svg>
+                                </button>
+                                <button class="action-btn delete" onclick="event.stopPropagation(); openDeleteModal('{{ video.id }}')" title="삭제">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mv-info">
+                        <div class="mv-title">{{ video.upload_title }}</div>
+                        <div class="mv-meta">
+                            <span class="mv-date">{{ video.upload_date|date:"Y.m.d" }}</span>
+                            {% if status == '22' %}<span class="mv-badge complete">완료</span>
+                            {% elif status == '23' %}<span class="mv-badge failed">실패</span>
+                            {% else %}<span class="mv-badge processing">진행 중</span>{% endif %}
                         </div>
-                        {% endwith %}
-                    {% endfor %}
+                    </div>
+
                 </div>
-                <div class="my-video-card add-new-card" onclick="openUploadModal()">
+                {% endwith %}
+            {% endfor %}
+            
+            <div class="my-video-card add-new-card" onclick="openUploadModal()">
+                <div class="add-content">
                     <div class="add-icon-circle">+</div>
                     <p>새 영상 업로드</p>
                 </div>
             </div>
         </div>
+    </div>
 
     {% else %}
         <div class="welcome-box">
