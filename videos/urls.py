@@ -15,5 +15,4 @@ urlpatterns = [
     path('myvideos/download/<int:video_id>/', views.process_download, name='download'),
     path('myvideos/delete/<int:video_id>/', views.delete_video, name='delete'),
     path('play/user/<int:video_id>/', views.play_user_video, name='play_user_video'),
-    path('api/check-notifications/', views.check_completed_videos, name='check_notifications'),
 ]

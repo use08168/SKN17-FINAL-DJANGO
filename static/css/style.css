@@ -1157,7 +1157,7 @@ video::-webkit-media-controls-fullscreen-button {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    height: calc(100vh - 140px);
+    height: calc(100vh - 250px);
     text-align: center;
     background-color: #141414;
     color: #fff;
