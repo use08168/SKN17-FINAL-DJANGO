@@ -1440,7 +1440,6 @@ video::-webkit-media-controls-fullscreen-button {
     display: grid;
     grid-template_columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
-    padding: 20px;
 }
 .my-video-card {
     background-color: #1a1a1a;
@@ -1454,31 +1453,130 @@ video::-webkit-media-controls-fullscreen-button {
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 .mv-thumb-box {
-    position: relative; 
+    position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9; 
+    aspect-ratio: 16 / 9;
     background-color: #000;
+    overflow: hidden;
 }
-.base-thumb-video {
+.mv-thumb-box video {
     width: 100%;
     height: 100%;
-    object-fit: cover; 
-    opacity: 0.6;
+    object-fit: cover;
+    display: block;
 }
-.status-overlay {
+.processing-overlay {
     position: absolute;
-    inset: 0; 
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.processing-overlay video {
+    position: absolute;
+    inset: 0;
+    opacity: 0.4;
+    z-index: 1;
+}
+.proc-content {
+    position: relative;
+    z-index: 2; 
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    background-color: rgba(0, 0, 0, 0.4); 
-    backdrop-filter: blur(2px); 
+    width: 80%;
+}
+.proc-msg {
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+.proc-bar-bg {
+    width: 100%;
+    height: 4px;
+    background-color: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.proc-bar-fill {
+    width: 60%; 
+    height: 100%;
+    background-color: #E50914; 
+    animation: loadingBar 1.5s infinite ease-in-out;
+}
+@keyframes loadingBar {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.error-mode .error-bg {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(50, 0, 0, 0.8);
+    z-index: 1;
+}
+.error-text {
+    position: relative;
     z-index: 2;
+    color: #ff6b6b;
 }
-.processing-overlay {
-    background-color: rgba(0, 0, 0, 0.6);
+.error-mode .action-btn {
+    position: relative;
+    z-index: 2;
+    margin-top: 10px;
+    background-color: #333;
+    opacity: 1; 
 }
+.hover-actions {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.my-video-card:hover .hover-actions {
+    opacity: 1;
+}
+.action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.action-btn:hover {
+    background-color: #fff;
+    color: #000;
+    transform: scale(1.1);
+}
+.action-btn svg {
+    width: 20px;
+    height: 20px;
+}
+.mv-info { padding: 12px; color: #fff; }
+.mv-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.mv-meta { display: flex; justify-content: space-between; font-size: 12px; color: #aaa; }
+.mv-badge { padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+.mv-badge.processing { color: #ffa000; border: 1px solid #ffa000; }
+.mv-badge.failed { color: #ff5252; border: 1px solid #ff5252; }
+.mv-badge.complete { color: #69f0ae; border: 1px solid #69f0ae; }
+
 .spinner {
     width: 30px;
     height: 30px;

@@ -192,24 +192,26 @@ class RunPodClient:
             try:
                 response = self.session.get(f"{self.runpod_url}/status/{job_id}", timeout=15)
                 status_data = response.json()
-                status = status_data.get('status')
+                raw_status = status_data.get('status', '').upper()
                 
                 progress = status_data.get('progress', 0)
                 step = status_data.get('step', '')
                 if step:
-                     logger.info(f"Job Status: {status} | Progress: {progress}% | Step: {step}")
+                     logger.info(f"Job Status: {raw_status} | Progress: {progress}% | Step: {step}")
 
-                if status == 'COMPLETED':
+                if raw_status in ['COMPLETED', 'SUCCESS']:
                     logger.info("✅ 작업 완료! 결과 다운로드 시작...")
                     
                     try:
                         original_name = user_upload_instance.upload_file.file_path.name
-                        saved_rel_path, local_abs_path = self.download_result_from_s3(output_s3_key, original_name)
+                        saved_rel_path = self.download_result_from_s3(output_s3_key, original_name)
 
                         user_upload_instance.upload_file.file_path = saved_rel_path
                         user_upload_instance.save()
                         
-                        script_data = status_data.get('output', {}).get('script')
+                        output_data = status_data.get('output', {})
+                        script_data = output_data.get('script') if isinstance(output_data, dict) else None
+
                         if script_data:
                             commentator_code_obj = self._get_common_code(db_analyst_id, 'COMMENTATOR')
                             script_bytes = json.dumps(script_data, ensure_ascii=False).encode('utf-8')
@@ -229,7 +231,7 @@ class RunPodClient:
                     
                     break 
                 
-                elif status == 'FAILED':
+                elif raw_status == 'FAILED':
                     logger.error(f"❌ 작업 실패: {status_data.get('error')}")
                     self._update_status(user_upload_instance, 23)
                     break
