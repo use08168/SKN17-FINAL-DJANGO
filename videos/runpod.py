@@ -31,7 +31,8 @@ class RunPodClient:
             retries={
                 'max_attempts': 10,
                 'mode': 'adaptive' 
-            }
+            },
+            signature_version='s3v4'
         )
         self.s3_client = boto3.client(
             's3',
@@ -97,11 +98,23 @@ class RunPodClient:
         return s3_key
 
     def generate_public_urls(self, input_s3_key):
-        download_url = f"https://{self.bucket_name}.s3.{settings.AWS_S3_REGION_NAME}.amazonaws.com/{input_s3_key}"
+        download_url = self.s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': self.bucket_name, 'Key': input_s3_key},
+            ExpiresIn=3600
+        )
         
         timestamp = int(time.time())
         output_key = f"outputs/result_{timestamp}.mp4"
-        upload_url = f"https://{self.bucket_name}.s3.{settings.AWS_S3_REGION_NAME}.amazonaws.com/{output_key}"
+        upload_url = self.s3_client.generate_presigned_url(
+            'put_object',
+            Params={
+                'Bucket': self.bucket_name, 
+                'Key': output_key,
+                'ContentType': 'video/mp4'
+            },
+            ExpiresIn=3600
+        )
         
         return {
             'download_url': download_url,
@@ -165,7 +178,17 @@ class RunPodClient:
 
     def _monitor_loop(self, user_upload_instance, job_id, db_analyst_id, output_s3_key):
         poll_interval = 5
+
+        max_wait_time = 20 * 60 
+        start_time = time.time()
+
         while True:
+            elapsed_time = time.time() - start_time
+            if elapsed_time > max_wait_time:
+                logger.error(f"⏰ 타임아웃 발생! ({max_wait_time}초 초과)")
+                self._update_status(user_upload_instance, 23)
+                break
+
             try:
                 response = self.session.get(f"{self.runpod_url}/status/{job_id}", timeout=15)
                 status_data = response.json()
