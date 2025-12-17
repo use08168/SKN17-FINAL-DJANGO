@@ -14,11 +14,11 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False   # 배포 시엔 반드시 False
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "54.116.12.113"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "43.202.211.140"]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://54.116.12.113",
-    "http://54.116.12.113:8080",
+    "http://43.202.211.140",
+    "http://43.202.211.140:8080",
 ]
 
 SESSION_COOKIE_SECURE = False
